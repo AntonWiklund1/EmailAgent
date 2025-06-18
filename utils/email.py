@@ -42,7 +42,7 @@ def process_message(msg) -> tuple[str, str, str, str, str, str, list[str]]:
         logger.info("Saved attachment: %s", filename)
         filenames.append(filename)
 
-    return from_email, to_email, subject, date, plain, html, filenames
+    return from_email, to_email, subject, date, plain.strip(), html.strip(), filenames
 
 
 def get_imap_client():
@@ -57,7 +57,7 @@ def get_imap_client():
 
     logger.info("Connecting to %s…", HOST)
     client = IMAPClient(HOST, ssl=True)
-    logger.info("Authenticating via XOAUTH2…")
+    logger.info("Authenticating via XOAUTH2 for %s", USER)
     client.oauth2_login(USER, creds.token)
     logger.info("Selecting folder %r…", MAILBOX)
     client.select_folder(MAILBOX, readonly=True)
