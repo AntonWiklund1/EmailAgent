@@ -2,7 +2,7 @@ import socket
 import time
 
 from logger import setup_logger
-from utils.email import process_message, get_imap_client
+from utils.email import process_message, get_imap_client, send_email
 
 from imapclient import IMAPClient
 from email import policy
@@ -58,9 +58,14 @@ def idle_loop():
                     logger.info("Plain: %s", plain)
                     logger.info("html: %s", html)
                     print("============================\n")
-                    if to_email == ONLY_ANSWER_TO_EMAIL:
+                    exact_from_email = from_email.split()[-1].replace("<", "").replace(">", "").strip() # Extract the email address from the "From" header
+                    if exact_from_email == ONLY_ANSWER_TO_EMAIL:
                         logger.info("Answering to %s", to_email)
-                        # TODO: Answer to the email
+                        send_email(
+                            to_addrs=ONLY_ANSWER_TO_EMAIL,
+                            subject="I have received your email",
+                            body="I have received your email",
+                        )
                     else:
                         logger.info("Not answering to %s", to_email)
                 if new_uids:
