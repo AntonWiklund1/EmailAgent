@@ -49,7 +49,7 @@ def idle_loop():
                         html,
                         filenames,
                     ) = process_message(msg)
-                    print("===== New email detected =====\n")
+                    print("\n ===== New email detected =====\n")
                     logger.info("From: %s", from_email)
                     logger.info("To: %s", to_email)
                     logger.info("Subject: %s", subject)
