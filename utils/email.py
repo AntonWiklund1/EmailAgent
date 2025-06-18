@@ -46,7 +46,7 @@ def process_message(msg) -> tuple[str, str, str, str, str, str, list[str]]:
         logger.info("Saved attachment: %s", filename)
         filenames.append(filename)
 
-    return from_email, to_email, subject, date, plain.strip(), html.strip(), filenames
+    return from_email, to_email, subject, date, plain, html, filenames
 
 
 def get_imap_client():
