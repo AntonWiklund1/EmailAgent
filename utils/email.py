@@ -1,9 +1,13 @@
 import pickle
+import base64
+import smtplib
+from email.message import EmailMessage
 
 from logger import setup_logger
 from imapclient import IMAPClient
 from google.auth.transport.requests import Request
 from constants import HOST, USER, MAILBOX
+
 
 logger = setup_logger()
 
@@ -62,3 +66,49 @@ def get_imap_client():
     logger.info("Selecting folder %r…", MAILBOX)
     client.select_folder(MAILBOX, readonly=True)
     return client
+
+
+def generate_oauth2_string(user, access_token):
+    """
+    Generate the base64-encoded OAuth2 authentication string for SMTP/XOAUTH2.
+    """
+    auth_string = f"user={user}\x01auth=Bearer {access_token}\x01\x01"
+    return base64.b64encode(auth_string.encode()).decode()
+
+
+def send_email(*, to_addrs, subject, body, html=None):
+    """
+    Send an email via Gmail SMTP using XOAUTH2.
+    to_addrs: recipient or list of recipients
+    subject: email subject
+    body: plain-text body
+    html: optional HTML body
+    """
+    # refresh token if needed
+    with open("token.pickle", "rb") as f:
+        creds = pickle.load(f)
+    if creds.expired and creds.refresh_token:
+        logger.info("Refreshing SMTP token…")
+        creds.refresh(Request())
+
+    access_token = creds.token
+    auth_string = generate_oauth2_string(USER, access_token)
+
+    # build the email message
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = USER
+    msg["To"] = to_addrs
+    msg.set_content(body)
+    if html:
+        msg.add_alternative(html, subtype="html")
+
+    logger.info("Connecting to SMTP server smtp.gmail.com:587…")
+    with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.ehlo()
+        # authenticate with OAuth2
+        smtp.docmd("AUTH", "XOAUTH2 " + auth_string)
+        smtp.send_message(msg)
+    logger.info("Email sent to %s", to_addrs)
