@@ -37,16 +37,16 @@ def process_message(msg) -> tuple[str, str, str, str, str, str, list[str]]:
             html = msg.get_content()
 
     # Save attachments and collect filenames
-    filenames = []
+    file_urls = []
     for part in msg.iter_attachments():
         filename = part.get_filename()
         content = part.get_content()
-        with open(filename, "wb") as f:
+        with open(f"tmp/{filename}", "wb") as f:
             f.write(content)
         logger.info("Saved attachment: %s", filename)
-        filenames.append(filename)
+        file_urls.append(f"tmp/{filename}")
 
-    return from_email, to_email, subject, date, plain, html, filenames
+    return from_email, to_email, subject, date, plain, html, file_urls
 
 
 def get_imap_client():
