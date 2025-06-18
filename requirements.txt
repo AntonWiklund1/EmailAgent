@@ -3,3 +3,6 @@ python-dotenv
 google-auth-oauthlib 
 google-auth-httplib2
 colorlog
+openai-agents
+google-genai
+llama-cloud-services
